@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
@@ -24,11 +25,10 @@
     }
     .error-tip { 
       font-size: 24px; 
-      color: red; 
+      color: #e74c3c; 
       text-align: center; 
-      line-height: 100vh; 
-      display: none; 
       padding: 0 20px; 
+      display: none;
     }
     .loader {
       position: fixed;
@@ -36,7 +36,7 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: #f5f5f5;
+      background: #ffffff;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -44,115 +44,136 @@
       z-index: 9999;
       transition: opacity 0.5s ease-in-out;
     }
-    /* 改进的加载动画 */
-    .loading-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    .spinner {
-      width: 60px;
-      height: 60px;
+    /* 美化的加载动画 */
+    .loading-spinner {
+      width: 80px;
+      height: 80px;
       position: relative;
-      margin-bottom: 24px;
+      margin-bottom: 28px;
     }
-    .spinner-circle {
+    .loading-spinner:before,
+    .loading-spinner:after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
       width: 100%;
       height: 100%;
       border-radius: 50%;
-      border: 4px solid rgba(52, 152, 219, 0.1);
+      border: 5px solid transparent;
       border-top-color: #3498db;
-      position: absolute;
-      animation: spin 1.5s linear infinite;
     }
-    .spinner-circle:nth-child(2) {
-      width: 45px;
-      height: 45px;
-      top: 7.5px;
-      left: 7.5px;
-      border-top-color: #2ecc71;
-      animation: spin 2s linear reverse infinite;
+    .loading-spinner:before {
+      animation: spin 1s linear infinite;
+    }
+    .loading-spinner:after {
+      border-top-color: #9b59b6;
+      animation: spin 2s linear infinite;
+      opacity: 0.7;
     }
     .loading-text {
-      color: #333;
-      font-size: 18px;
+      color: #2c3e50;
+      font-size: 20px;
       font-weight: 500;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.8px;
       animation: pulse 1.5s ease-in-out infinite;
     }
     @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
+      0% { transform: rotate(0deg) scale(1); }
+      50% { transform: rotate(180deg) scale(1.05); }
+      100% { transform: rotate(360deg) scale(1); }
     }
     @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.6; }
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.7; transform: scale(1.02); }
     }
   </style>
-<style type="text/css" id="__via_marker__"></style></head>
+</head>
 <body>
-  <!-- 加载动画 -->
+  <!-- 加载动画容器 -->
   <div class="loader" id="loader">
-    <div class="loading-container">
-      <div class="spinner">
-        <div class="spinner-circle"></div>
-        <div class="spinner-circle"></div>
-      </div>
-      <div class="loading-text">加载中，请稍候...</div>
-    </div>
+    <div class="loading-spinner"></div>
+    <div class="loading-text">加载中，请稍候...</div>
     <div class="error-tip">无效的URL参数</div>
   </div>
 
   <script>
-    // 显示加载动画
-    document.getElementById('loader').style.display = 'flex';
+    // 确保加载动画默认显示
+    const loader = document.getElementById('loader');
+    loader.style.display = 'flex';
     
     // 解析URL参数
-    var urlParams = new URLSearchParams(window.location.search); 
-    var encodedParam = urlParams.get('xl'); 
-    var tureurl = encodedParam ? atob(encodedParam) : ''; 
+    const urlParams = new URLSearchParams(window.location.search); 
+    const encodedParam = urlParams.get('xl'); 
+    let tureurl = '';
     
-    if (tureurl && tureurl.includes("http")) {
+    try {
+      // 安全解码URL参数
+      if (encodedParam) {
+        tureurl = atob(encodedParam);
+      }
+    } catch (e) {
+      console.error('URL解码错误:', e);
+    }
+    
+    if (tureurl && (tureurl.startsWith("http://") || tureurl.startsWith("https://"))) {
       // 创建iframe
-      var iframe = document.createElement('iframe');
+      const iframe = document.createElement('iframe');
       iframe.className = 'content';
       iframe.src = tureurl;
+      
+      // 处理iframe加载完成
       iframe.onload = function() {
         // 加载完成后淡入iframe并淡出加载动画
         iframe.style.opacity = '1';
-        var loader = document.getElementById('loader');
         loader.style.opacity = '0';
-        setTimeout(function() {
+        setTimeout(() => {
           loader.style.display = 'none';
         }, 500);
         
         // 绑定鼠标滚轮事件
         bindMouseWhee(iframe);
       };
+      
+      // 处理iframe加载错误
+      iframe.onerror = function() {
+        showError();
+      };
+      
       document.body.appendChild(iframe); 
-      console.log(tureurl);
+      console.log('加载URL:', tureurl);
     } else { 
       // 没有有效URL时显示错误信息
-      console.log("nourls"); 
-      document.querySelector('.loading-container').style.display = 'none';
+      console.log("无效的URL参数"); 
+      showError();
+    }
+    
+    // 显示错误信息
+    function showError() {
+      document.querySelector('.loading-spinner').style.display = 'none';
+      document.querySelector('.loading-text').style.display = 'none';
       document.querySelector('.error-tip').style.display = 'block';
     }
     
     // 鼠标滚轮处理函数
-    var firefox = navigator.userAgent.indexOf('Firefox') != -1; 
+    const firefox = navigator.userAgent.indexOf('Firefox') !== -1; 
     function MouseWheel(e, doc) { 
-      e.preventDefault && e.preventDefault(), e.returnValue = false; 
-      var up = firefox && e.detail < 0 || e.wheelDelta > 0; 
+      e.preventDefault && e.preventDefault();
+      e.returnValue = false; 
+      const up = firefox && e.detail < 0 || e.wheelDelta > 0; 
       doc.body.scrollTop = doc.documentElement.scrollTop += up ? -50 : 50; 
     }
     
     function bindMouseWhee(ifr) {
       try { 
-        var doc = ifr.contentWindow.document; 
-        firefox ? doc.addEventListener('DOMMouseScroll', function (e) { MouseWheel(e, doc) }, false) : 
-                 (doc.onmousewheel = function (e) { MouseWheel(e || ifr.contentWindow.event, doc) }); 
+        const doc = ifr.contentWindow.document; 
+        if (firefox) {
+          doc.addEventListener('DOMMouseScroll', (e) => MouseWheel(e, doc), false);
+        } else {
+          doc.onmousewheel = (e) => MouseWheel(e || ifr.contentWindow.event, doc);
+        }
       } catch (e) { 
-        console.error('Error' + e); 
+        console.error('滚轮事件绑定错误:', e); 
       }
     }
   </script>
