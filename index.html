@@ -1,4 +1,5 @@
-<html><head>
+<html>
+<head>
   <meta charset="UTF-8">
   <meta content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=0" name="viewport">
   <title>加载中...</title>
@@ -43,27 +44,64 @@
       z-index: 9999;
       transition: opacity 0.5s ease-in-out;
     }
+    /* 改进的加载动画 */
+    .loading-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
     .spinner {
-      width: 50px;
-      height: 50px;
-      border: 5px solid rgba(0, 0, 0, 0.1);
+      width: 60px;
+      height: 60px;
+      position: relative;
+      margin-bottom: 24px;
+    }
+    .spinner-circle {
+      width: 100%;
+      height: 100%;
       border-radius: 50%;
+      border: 4px solid rgba(52, 152, 219, 0.1);
       border-top-color: #3498db;
-      animation: spin 1s ease-in-out infinite;
-      margin-bottom: 20px;
+      position: absolute;
+      animation: spin 1.5s linear infinite;
+    }
+    .spinner-circle:nth-child(2) {
+      width: 45px;
+      height: 45px;
+      top: 7.5px;
+      left: 7.5px;
+      border-top-color: #2ecc71;
+      animation: spin 2s linear reverse infinite;
     }
     .loading-text {
       color: #333;
       font-size: 18px;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      animation: pulse 1.5s ease-in-out infinite;
     }
     @keyframes spin {
-      to { transform: rotate(360deg); }
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
     }
   </style>
 <style type="text/css" id="__via_marker__"></style></head>
 <body>
   <!-- 加载动画 -->
-  <div class="loader" id="loader" style="display: flex;"><div class="error-tip">无效的URL参数</div></div>
+  <div class="loader" id="loader">
+    <div class="loading-container">
+      <div class="spinner">
+        <div class="spinner-circle"></div>
+        <div class="spinner-circle"></div>
+      </div>
+      <div class="loading-text">加载中，请稍候...</div>
+    </div>
+    <div class="error-tip">无效的URL参数</div>
+  </div>
 
   <script>
     // 显示加载动画
@@ -96,8 +134,8 @@
     } else { 
       // 没有有效URL时显示错误信息
       console.log("nourls"); 
-      document.getElementById('loader').innerHTML = 
-        '<div class="error-tip">无效的URL参数</div>';
+      document.querySelector('.loading-container').style.display = 'none';
+      document.querySelector('.error-tip').style.display = 'block';
     }
     
     // 鼠标滚轮处理函数
@@ -118,6 +156,5 @@
       }
     }
   </script>
-
-
-</body></html>
+</body>
+</html>
